@@ -1,71 +1,206 @@
-# GOST for Android
+# GOST Mobile Library
 
-[![Build Status](https://travis-ci.org/ginuerzh/gost.svg?branch=master)](https://travis-ci.org/ginuerzh/gost)
-[![Go Report Card](https://goreportcard.com/badge/github.com/ginuerzh/gost)](https://goreportcard.com/report/github.com/ginuerzh/gost)
+[![Build Status](https://github.com/tje3d/gost-lib/workflows/Build%20Android%20AAR%20and%20Create%20Release/badge.svg)](https://github.com/tje3d/gost-lib/actions)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Android API](https://img.shields.io/badge/API-21%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=21)
 
-[English](README_en.md) | [中文](README.md)
+A Go mobile library that provides basic GOST tunneling functionality for embedding into mobile applications. This library wraps the [GOST (GO Simple Tunnel)](https://github.com/ginuerzh/gost) project using Google's `gomobile` tool.
 
-GOST (GO Simple Tunnel) is a versatile and secure tunnel program written in Go.
+**Note: Functionality is currently very limited. Pull requests are welcome to expand capabilities.**
 
-This repository is a fork of the original GOST project, specifically tailored for creating an Android Archive (AAR) library using `gomobile`. This allows you to embed GOST's powerful networking capabilities directly into your Android applications.
+## What is this?
 
-## Features
+This repository provides a simplified mobile binding for GOST, allowing developers to embed basic tunneling functionality into their applications. The current implementation (see `gostandroid.go`) offers minimal functionality with room for significant expansion.
 
-*   Multi-platform support (Windows, Linux, macOS, Android, iOS)
-*   Multi-protocol support (various proxy and tunneling protocols)
-*   Chainable proxy nodes for complex routing
-*   TLS/SSL encryption
-*   Multiplexing and connection pooling
+## Current Features
 
-## Building for Android
+The library currently provides basic functionality through three main functions:
 
-This repository is configured to be built into an AAR library for Android using `gomobile`.
+- `StartTunnel(transport, addr, username, password string)` - Start a SOCKS5 tunnel
+- `StopTunnel()` - Stop the running tunnel  
+- Support for basic transports: WebSocket (ws), WebSocket Secure (wss), SSH
 
-### Prerequisites
+**Limitations:**
+- Only SOCKS5 proxy support
+- Limited transport options
+- No advanced GOST features (chaining, load balancing, etc.)
+- Basic error handling
 
-*   [Go](https://golang.org/dl/) (version 1.13+)
-*   [Android NDK](https://developer.android.com/ndk/downloads)
-*   `gomobile` tool
+## Contributing
 
-Install `gomobile` with the following command:
+This project needs significant development to unlock GOST's full potential on mobile platforms. Areas where contributions are especially welcome:
+
+- Expanding transport protocol support
+- Adding proxy chaining capabilities
+- Implementing advanced GOST features
+- Improving error handling and logging
+- Adding configuration options
+- Platform-specific optimizations
+
+See `gostandroid.go` for the current implementation.
+
+## Platform Support
+
+| Platform          | Status      | Library Format | API Language      |
+| ----------------- | ----------- | -------------- | ----------------- |
+| **Android**       | Available   | AAR            | Java/Kotlin       |
+| **iOS**           | Planned     | Framework      | Swift/Objective-C |
+
+## Installation
+
+### Option 1: Download Pre-built Library
+
+#### Android (AAR)
+
+1. Go to [Releases](https://github.com/tje3d/gost-lib/releases)
+2. Download the latest `gost.aar` file
+3. Add it to your Android project:
+
+```gradle
+// In your app's build.gradle
+dependencies {
+    implementation files('libs/gost.aar')
+}
+```
+
+### Option 2: Build from Source
+
+**Prerequisites:**
+- Go 1.21+
+- Android SDK with NDK (for Android builds)
+- Java 17+
+
+**Build steps:**
 
 ```bash
-go get golang.org/x/mobile/cmd/gomobile
+# Install gomobile
+go install golang.org/x/mobile/cmd/gomobile@latest
 gomobile init
+
+# Build Android AAR
+gomobile bind -target=android -o gost.aar -androidapi 21 -ldflags="-s -w" .
 ```
 
-### Build Command
+## Usage Examples
 
-To build the AAR file, run the following command from the root of this repository:
+### Android (Java/Kotlin)
 
-```bash
-gomobile bind -target=android -o gost.aar -androidapi 21 -ldflags="-s -w" ./gost/gostmobile
-```
-
-This command will generate `gost.aar` in the root directory. You can then import this AAR file into your Android Studio project.
-
-## Usage in Android
-
-Once the AAR is included in your project, you can call the exported functions from the `gostmobile` package.
-
-**Example:**
+#### Basic Tunnel Setup
 
 ```java
 import gostmobile.Gostmobile;
 
-// Start the tunnel
-try {
-    Gostmobile.startTunnel("ssh", "user:pass@host:port", "username", "password");
-} catch (Exception e) {
-    // Handle error
-}
+public class TunnelManager {
 
-// Stop the tunnel
-try {
-    Gostmobile.stopTunnel();
-} catch (Exception e) {
-    // Handle error
+    public void startSecureTunnel() {
+        try {
+            // Start a SOCKS5 proxy tunnel
+            Gostmobile.startTunnel(
+                "socks5",
+                "user:password@proxy.example.com:1080",
+                "myusername",
+                "mypassword"
+            );
+
+            Log.i("Tunnel", "Secure tunnel started successfully!");
+
+        } catch (Exception e) {
+            Log.e("Tunnel", "Failed to start tunnel: " + e.getMessage());
+        }
+    }
+
+    public void stopTunnel() {
+        try {
+            Gostmobile.stopTunnel();
+            Log.i("Tunnel", "Tunnel stopped");
+        } catch (Exception e) {
+            Log.e("Tunnel", "Error stopping tunnel: " + e.getMessage());
+        }
+    }
 }
 ```
 
-For more details on the original GOST project, please see the official [gost repository](https://github.com/ginuerzh/gost).
+#### Advanced Configuration
+
+```java
+// HTTP proxy with authentication
+Gostmobile.startTunnel(
+    "http",
+    "corporate-proxy.company.com:8080",
+    "employee_id",
+    "secure_password"
+);
+
+// SSH tunnel for secure communication
+Gostmobile.startTunnel(
+    "ssh",
+    "ssh-server.example.com:22",
+    "ssh_username",
+    "ssh_password"
+);
+```
+
+#### Integration with Android Network Stack
+
+```java
+public class NetworkService {
+
+    public void setupProxiedConnection() {
+        // Start GOST tunnel
+        startSecureTunnel();
+
+        // Configure your HTTP client to use the local proxy
+        OkHttpClient client = new OkHttpClient.Builder()
+            .proxy(new Proxy(Proxy.Type.SOCKS,
+                   new InetSocketAddress("127.0.0.1", 1080)))
+            .build();
+
+        // Now all requests go through the GOST tunnel!
+        Request request = new Request.Builder()
+            .url("https://api.example.com/data")
+            .build();
+
+        client.newCall(request).enqueue(callback);
+    }
+}
+```
+
+### iOS (Coming Soon)
+
+```swift
+// Future iOS API (planned)
+import GostMobile
+
+class TunnelManager {
+    func startSecureTunnel() {
+        do {
+            try GostMobile.startTunnel(
+                protocol: "socks5",
+                endpoint: "user:password@proxy.example.com:1080",
+                username: "myusername",
+                password: "mypassword"
+            )
+            print("Secure tunnel started successfully!")
+        } catch {
+            print("Failed to start tunnel: \(error)")
+        }
+    }
+}
+```
+
+## Requirements
+
+### Android Runtime
+- Android API Level 21+ (Android 5.0+)
+- Permissions: `INTERNET` (add to AndroidManifest.xml)
+
+### Build Requirements
+- Go 1.21+
+- Android SDK with NDK (for Android builds)
+- Java 17+
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+The original GOST project is also MIT licensed. See the [GOST repository](https://github.com/ginuerzh/gost) for more information.
