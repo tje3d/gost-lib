@@ -87,7 +87,7 @@ jobs:
         echo "Current directory: $(pwd)"
         echo "Go version: $(go version)"
         echo "Building with gomobile..."
-        gomobile bind -target=android -o gost.aar -androidapi 21 -ldflags="-s -w" -pkg=gostlib ./
+        gomobile bind -target=android -o gost.aar -androidapi 21 -ldflags="-s -w" .
         echo "Build completed. Checking output..."
         ls -la *.aar *.jar
         
