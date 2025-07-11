@@ -3,6 +3,7 @@ package gostmobile
 import (
 	"log"
 	"net"
+	"net/url"
 
 	"github.com/ginuerzh/gost"
 )
@@ -18,6 +19,8 @@ func getTransporter(transport string) gost.Transporter {
 		return gost.WSTransporter(nil)
 	case "wss":
 		return gost.WSSTransporter(nil)
+	case "ssh":
+		return gost.SSHTunnelTransporter()
 	default:
 		// Default to websocket if unknown transport
 		return gost.WSTransporter(nil)
@@ -25,19 +28,22 @@ func getTransporter(transport string) gost.Transporter {
 }
 
 // StartTunnel sets up and starts the gost tunnel with specified transport and address.
-func StartTunnel(transport, addr string) error {
+func StartTunnel(transport, addr, username, password string) error {
 	// Create chain with configurable transport and address
-	chain := gost.NewChain(
-		gost.Node{
-			Protocol:  "socks5",
-			Transport: transport,
-			Addr:      addr,
-			Client: &gost.Client{
-				Connector:   gost.SOCKS5Connector(nil),
-				Transporter: getTransporter(transport),
-			},
+	node := gost.Node{
+		Protocol:  "socks5",
+		Transport: transport,
+		Addr:      addr,
+		Client: &gost.Client{
+			Connector:   gost.SOCKS5Connector(nil),
+			Transporter: getTransporter(transport),
 		},
-	)
+	}
+	if username != "" {
+		node.User = url.UserPassword(username, password)
+	}
+
+	chain := gost.NewChain(node)
 
 	// Create SOCKS5 listener
 	ln, err := net.Listen("tcp", "0.0.0.0:1080")
