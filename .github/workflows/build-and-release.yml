@@ -99,8 +99,11 @@ jobs:
         else
           VERSION="pr-${{ github.event.number }}-$(echo ${{ github.sha }} | cut -c1-7)"
         fi
+        BUILD_DATE=$(date +'%Y-%m-%d %H:%M:%S UTC')
         echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "build_date=$BUILD_DATE" >> $GITHUB_OUTPUT
         echo "Generated version: $VERSION"
+        echo "Build date: $BUILD_DATE"
         
     - name: Upload AAR as artifact
       uses: actions/upload-artifact@v4
@@ -130,7 +133,7 @@ jobs:
           ### Build Information
           - Commit: ${{ github.sha }}
           - Branch: ${{ github.ref_name }}
-          - Build Date: $(date +'%Y-%m-%d %H:%M:%S UTC')
+          - Build Date: ${{ steps.version.outputs.build_date }}
           - Android API Level: 21+
           
           ### Example Usage
