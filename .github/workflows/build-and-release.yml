@@ -69,12 +69,8 @@ jobs:
         echo "Installing gomobile..."
         go install golang.org/x/mobile/cmd/gomobile@latest
         go install golang.org/x/mobile/cmd/gobind@latest
-        echo "Installing mobile bind package..."
-        go get golang.org/x/mobile/bind
         echo "Initializing gomobile..."
         gomobile init
-        echo "Verifying gomobile installation..."
-        gomobile version
         
     - name: Build dependencies
       run: |
@@ -83,17 +79,19 @@ jobs:
         echo "Downloading gost module dependencies..."
         cd gost
         go mod download
+        echo "Adding mobile bind dependency to gost module..."
+        go get golang.org/x/mobile/bind
+        echo "Verifying mobile dependencies..."
+        go list -m golang.org/x/mobile/bind
         cd ..
       
     - name: Build AAR
       run: |
         echo "Building Android AAR..."
-        cd gost
         echo "Current directory: $(pwd)"
         echo "Go version: $(go version)"
-        echo "Gomobile version: $(gomobile version)"
         echo "Building with gomobile..."
-        gomobile bind -target=android -o gost.aar -androidapi 21 -ldflags="-s -w" ./
+        gomobile bind -target=android -o gost.aar -androidapi 21 -ldflags="-s -w" -pkg=gostlib ./
         echo "Build completed. Checking output..."
         ls -la *.aar *.jar
         
