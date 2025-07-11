@@ -48,7 +48,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.22'
+        go-version: '1.23'
         
     - name: Set up Java
       uses: actions/setup-java@v4
@@ -79,10 +79,6 @@ jobs:
         echo "Downloading gost module dependencies..."
         cd gost
         go mod download
-        echo "Adding mobile bind dependency to gost module..."
-        go get golang.org/x/mobile/bind
-        echo "Verifying mobile dependencies..."
-        go list -m golang.org/x/mobile/bind
         cd ..
       
     - name: Build AAR
