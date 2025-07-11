@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main, master ]
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -61,7 +65,9 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: gost-aar-${{ steps.version.outputs.version }}
-        path: gost/gost.aar
+        path: |
+          gost/gost.aar
+          gost/gost-sources.jar
         retention-days: 30
         
     - name: Create Release (on push to main/master only)
@@ -106,6 +112,7 @@ jobs:
           ```
         files: |
           gost/gost.aar
+          gost/gost-sources.jar
         draft: false
         prerelease: false
       env:
