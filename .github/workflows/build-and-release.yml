@@ -48,7 +48,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.21'
+        go-version: '1.22'
         
     - name: Set up Java
       uses: actions/setup-java@v4
@@ -64,18 +64,38 @@ jobs:
         sdkmanager "ndk;25.2.9519653"
         echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/25.2.9519653" >> $GITHUB_ENV
         
-    - name: Install gomobile
+    - name: Install gomobile and dependencies
       run: |
+        echo "Installing gomobile..."
         go install golang.org/x/mobile/cmd/gomobile@latest
+        go install golang.org/x/mobile/cmd/gobind@latest
+        echo "Installing mobile bind package..."
+        go get golang.org/x/mobile/bind
+        echo "Initializing gomobile..."
         gomobile init
+        echo "Verifying gomobile installation..."
+        gomobile version
         
     - name: Build dependencies
-      run: go mod download
+      run: |
+        echo "Downloading main module dependencies..."
+        go mod download
+        echo "Downloading gost module dependencies..."
+        cd gost
+        go mod download
+        cd ..
       
     - name: Build AAR
       run: |
+        echo "Building Android AAR..."
         cd gost
+        echo "Current directory: $(pwd)"
+        echo "Go version: $(go version)"
+        echo "Gomobile version: $(gomobile version)"
+        echo "Building with gomobile..."
         gomobile bind -target=android -o gost.aar -androidapi 21 -ldflags="-s -w" ./
+        echo "Build completed. Checking output..."
+        ls -la *.aar *.jar
         
     - name: Generate version tag
       id: version
