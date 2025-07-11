@@ -1,4 +1,4 @@
-package gostandroid
+package gostlib
 
 import (
 	"log"

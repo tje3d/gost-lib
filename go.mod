@@ -1,4 +1,4 @@
-module gostandroid
+module gost-lib
 
 go 1.24.2
 

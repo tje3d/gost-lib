@@ -10,17 +10,18 @@ A Go mobile library that provides basic GOST tunneling functionality for embeddi
 
 ## What is this?
 
-This repository provides a simplified mobile binding for GOST, allowing developers to embed basic tunneling functionality into their applications. The current implementation (see `gostandroid.go`) offers minimal functionality with room for significant expansion.
+This repository provides a simplified mobile binding for GOST, allowing developers to embed basic tunneling functionality into their applications. The current implementation (see `gostlib.go`) offers minimal functionality with room for significant expansion.
 
 ## Current Features
 
 The library currently provides basic functionality through three main functions:
 
 - `StartTunnel(transport, addr, username, password string)` - Start a SOCKS5 tunnel
-- `StopTunnel()` - Stop the running tunnel  
+- `StopTunnel()` - Stop the running tunnel
 - Support for basic transports: WebSocket (ws), WebSocket Secure (wss), SSH
 
 **Limitations:**
+
 - Only SOCKS5 proxy support
 - Limited transport options
 - No advanced GOST features (chaining, load balancing, etc.)
@@ -37,14 +38,14 @@ This project needs significant development to unlock GOST's full potential on mo
 - Adding configuration options
 - Platform-specific optimizations
 
-See `gostandroid.go` for the current implementation.
+See `gostlib.go` for the current implementation.
 
 ## Platform Support
 
-| Platform          | Status      | Library Format | API Language      |
-| ----------------- | ----------- | -------------- | ----------------- |
-| **Android**       | Available   | AAR            | Java/Kotlin       |
-| **iOS**           | Planned     | Framework      | Swift/Objective-C |
+| Platform    | Status    | Library Format | API Language      |
+| ----------- | --------- | -------------- | ----------------- |
+| **Android** | Available | AAR            | Java/Kotlin       |
+| **iOS**     | Planned   | Framework      | Swift/Objective-C |
 
 ## Installation
 
@@ -66,6 +67,7 @@ dependencies {
 ### Option 2: Build from Source
 
 **Prerequisites:**
+
 - Go 1.21+
 - Android SDK with NDK (for Android builds)
 - Java 17+
@@ -191,10 +193,12 @@ class TunnelManager {
 ## Requirements
 
 ### Android Runtime
+
 - Android API Level 21+ (Android 5.0+)
 - Permissions: `INTERNET` (add to AndroidManifest.xml)
 
 ### Build Requirements
+
 - Go 1.21+
 - Android SDK with NDK (for Android builds)
 - Java 17+

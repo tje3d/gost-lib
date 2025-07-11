@@ -50,7 +50,7 @@ jobs:
     - name: Build AAR
       run: |
         cd gost
-        gomobile bind -target=android -o gost.aar -androidapi 21 -ldflags="-s -w" ./gostmobile
+        gomobile bind -target=android -o gost.aar -androidapi 21 -ldflags="-s -w" ./
         
     - name: Generate version tag
       id: version
