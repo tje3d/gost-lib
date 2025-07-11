@@ -1,0 +1,112 @@
+name: Build Android AAR and Create Release
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+        
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+        
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      
+    - name: Install Android NDK
+      run: |
+        sdkmanager "ndk;25.2.9519653"
+        echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/25.2.9519653" >> $GITHUB_ENV
+        
+    - name: Install gomobile
+      run: |
+        go install golang.org/x/mobile/cmd/gomobile@latest
+        gomobile init
+        
+    - name: Build dependencies
+      run: go mod download
+      
+    - name: Build AAR
+      run: |
+        cd gost
+        gomobile bind -target=android -o gost.aar -androidapi 21 -ldflags="-s -w" ./gostmobile
+        
+    - name: Generate version tag
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" == "push" ]; then
+          VERSION="v$(date +'%Y.%m.%d')-$(echo ${{ github.sha }} | cut -c1-7)"
+        else
+          VERSION="pr-${{ github.event.number }}-$(echo ${{ github.sha }} | cut -c1-7)"
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Generated version: $VERSION"
+        
+    - name: Upload AAR as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: gost-aar-${{ steps.version.outputs.version }}
+        path: gost/gost.aar
+        retention-days: 30
+        
+    - name: Create Release (on push to main/master only)
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.version.outputs.version }}
+        name: Release ${{ steps.version.outputs.version }}
+        body: |
+          ## GOST Android AAR Release
+          
+          This release contains the Android AAR library built from commit ${{ github.sha }}.
+          
+          ### Usage
+          1. Download the `gost.aar` file
+          2. Import it into your Android Studio project
+          3. Use the `gostmobile.Gostmobile` class to access GOST functionality
+          
+          ### Build Information
+          - Commit: ${{ github.sha }}
+          - Branch: ${{ github.ref_name }}
+          - Build Date: $(date +'%Y-%m-%d %H:%M:%S UTC')
+          - Android API Level: 21+
+          
+          ### Example Usage
+          ```java
+          import gostmobile.Gostmobile;
+          
+          // Start the tunnel
+          try {
+              Gostmobile.startTunnel("ssh", "user:pass@host:port", "username", "password");
+          } catch (Exception e) {
+              // Handle error
+          }
+          
+          // Stop the tunnel
+          try {
+              Gostmobile.stopTunnel();
+          } catch (Exception e) {
+              // Handle error
+          }
+          ```
+        files: |
+          gost/gost.aar
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
