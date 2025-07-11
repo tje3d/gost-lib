@@ -111,8 +111,8 @@ jobs:
       with:
         name: gost-aar-${{ steps.version.outputs.version }}
         path: |
-          gost/gost.aar
-          gost/gost-sources.jar
+          gost.aar
+          gost-sources.jar
         retention-days: 30
         
     - name: Create Release (on push to main/master only)
@@ -156,8 +156,8 @@ jobs:
           }
           ```
         files: |
-          gost/gost.aar
-          gost/gost-sources.jar
+          gost.aar
+          gost-sources.jar
         draft: false
         prerelease: false
       env:
